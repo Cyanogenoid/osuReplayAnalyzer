@@ -211,7 +211,7 @@ namespace osuDodgyMomentsFinder
             {
                 if(dbBeatmap.Hash == replay.MapHash)
                 {
-                    beatmapPath = settings.pathSongs + dbBeatmap.FolderName + "\\" + dbBeatmap.OsuFile;
+                    beatmapPath = settings.pathSongs + dbBeatmap.FolderName + "/" + dbBeatmap.OsuFile;
                     break;
                 }
             }
