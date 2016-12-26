@@ -199,32 +199,6 @@ namespace osuDodgyMomentsFinder
 
         public static void Main(string[] args)
         {
-            if(File.Exists(settings.pathSettings))
-            {
-                Console.WriteLine(settings.pathSettings + " found. Parsing settings.");
-                settings.LoadSettings();
-            }
-            else
-            {
-                string[] settings_help = new string[]
-                {
-                    @"# Lines starting with a # are ignored",
-                    @"",
-                    @"# Path to osu!.db",
-                    @"pathOsuDB=C:\\osu!\\osu!.db",
-                    @"",
-                    @"# Path to your osu! song folder",
-                    @"pathSongs=C:\\osu!\\songs\\",
-                    @"",
-                    @"# Path to a replay folder",
-                    @"pathReplays=C:\\osu!\\replays\\"
-                };
-                File.WriteAllLines(settings.pathSettings, settings_help);
-                Console.WriteLine("A settings file has been created for you to link to your songs folder.");
-                return;
-            }
-
-
             if(args.Length == 0)
             {
                 Console.WriteLine("Welcome the firedigger's replay analyzer. Use one of 3 options");
