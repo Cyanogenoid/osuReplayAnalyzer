@@ -25,62 +25,41 @@ namespace osuDodgyMomentsFinder
         }
 
 
-        public static List<KeyValuePair<Beatmap, Replay>> AssociateMapsReplays(bool osuDB)
+        public static List<KeyValuePair<Beatmap, Replay>> AssociateMapsReplays(string basepath)
         {
-            DirectoryInfo directory = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            if (!basepath.EndsWith("/")) {
+                basepath = basepath + "/";
+            }
+            DirectoryInfo directory = new DirectoryInfo(basepath);
             FileInfo[] files = directory.GetFiles();
 
             var replaysFiles = new List<string>();
-            var mapsFiles = new List<string>();
+            string mapPath = null;
             foreach(FileInfo file in files)
             {
-                if(file.Extension == ".osr")
+                if(file.Extension == ".b64")
                 {
-                    replaysFiles.Add(file.Name);
+                    replaysFiles.Add(basepath + file.Name);
                 }
                 if(file.Extension == ".osu")
                 {
-                    mapsFiles.Add(file.Name);
+                    if (mapPath != null)
+                    {
+                        Console.WriteLine("WARNING: more than one .osu file found in " + basepath);
+                    }
+                    mapPath = basepath + file.Name;
                 }
             }
             var replays = replaysFiles.ConvertAll((path) => new Replay(path, true, true));
 
-            var osuDBmaps = settings.osuDbP.Beatmaps;
-
-            var maps = mapsFiles.ConvertAll((path) => new Beatmap(path));
+            Beatmap beatmap = new Beatmap(mapPath);
 
             var result = new List<KeyValuePair<Beatmap, Replay>>();
             var dict = new Dictionary<string, Beatmap>();
 
-            //Add all the beatmaps from the current folder
-            foreach(var map in maps)
+            foreach(var replay in replays)
             {
-                dict.Add(map.BeatmapHash, map);
-            }
-
-            //Add all the beatmaps from the osu DB
-            if(osuDB)
-            {
-                foreach(OsuDbAPI.Beatmap dbBeatmap in osuDBmaps)
-                {
-                    string beatmapPath = settings.pathSongs + dbBeatmap.FolderName + "\\" + dbBeatmap.OsuFile;
-                    Beatmap map = new Beatmap(beatmapPath);
-                    if(!dict.ContainsKey(map.BeatmapHash))
-                        dict.Add(map.BeatmapHash, map);
-                }
-
-                foreach(var replay in replays)
-                {
-
-                    if(dict.ContainsKey(replay.MapHash))
-                    {
-                        result.Add(new KeyValuePair<Beatmap, Replay>(dict[replay.MapHash], replay));
-                    }
-                    else
-                    {
-                        Console.WriteLine("WARNING! A corresponding map wasn't found for " + replay.ToString());
-                    }
-                }
+                result.Add(new KeyValuePair<Beatmap, Replay>(beatmap, replay));
             }
 
             return result;
@@ -184,22 +163,18 @@ namespace osuDodgyMomentsFinder
             Console.ReadKey();
         }
 
-        public static void ReplayAnalyzingAll(bool oneFile = true)
+        public static void ReplayAnalyzingAll(string path)
         {
-            var pairs = AssociateMapsReplays(true);
+            var pairs = AssociateMapsReplays(path);
 
             string res = "";
+            StringBuilder sb = new StringBuilder();
             foreach(var pair in pairs)
             {
                 string result = ReplayAnalyzing(pair.Key, pair.Value).ToString();
-                if(oneFile)
-                    res += result;
-                else
-                    File.WriteAllText(pair.Value.ToString() + ".txt", result);
+                sb.Append(result);
             }
-            if(oneFile)
-                File.WriteAllText("Report " + DateTime.Now.ToString("MMMM dd, yyyy H-mm-ss") + ".txt", res);
-
+            File.WriteAllText("log.txt", sb.ToString());
         }
 
         public static string ReplayAnalyzing(Replay replay)
@@ -262,7 +237,7 @@ namespace osuDodgyMomentsFinder
             }
             if(args[0] == "-ia")
             {
-                ReplayAnalyzingAll(true);
+                ReplayAnalyzingAll(args[1]);
             }
             if(args[0] == "-i")
             {
