@@ -39,7 +39,7 @@ namespace ReplayAPI
         public List<ReplayFrame> ReplayFrames = new List<ReplayFrame>();
         public int Seed;
 
-        private BinaryReader replayReader;
+        private MemoryStream replayReader;
         private CultureInfo culture = new CultureInfo("en-US", false);
         private bool headerLoaded;
         public bool fullLoaded { get; private set; }
@@ -47,7 +47,9 @@ namespace ReplayAPI
         public Replay(string replayFile, bool fullLoad, bool calculateSpeed)
         {
             Filename = replayFile;
-            using (replayReader = new BinaryReader(new FileStream(replayFile, FileMode.Open, FileAccess.Read, FileShare.Read)))
+            byte[] content = System.Convert.FromBase64String(File.ReadAllText(replayFile));
+            ReplayLength = content.Length;
+            using (replayReader = new MemoryStream(content))
             {
                 loadHeader();
                 if (fullLoad)
@@ -68,21 +70,6 @@ namespace ReplayAPI
 
         private void loadHeader()
         {
-            GameMode = (GameModes)Enum.Parse(typeof(GameModes), replayReader.ReadByte().ToString(culture));
-            FileFormat = replayReader.ReadInt32();
-            MapHash = replayReader.ReadNullableString();
-            PlayerName = replayReader.ReadNullableString();
-            ReplayHash = replayReader.ReadNullableString();
-            Count300 = replayReader.ReadUInt16();
-            Count100 = replayReader.ReadUInt16();
-            Count50 = replayReader.ReadUInt16();
-            CountGeki = replayReader.ReadUInt16();
-            CountKatu = replayReader.ReadUInt16();
-            CountMiss = replayReader.ReadUInt16();
-            TotalScore = replayReader.ReadUInt32();
-            MaxCombo = replayReader.ReadUInt16();
-            IsPerfect = replayReader.ReadBoolean();
-            Mods = (Mods)replayReader.ReadInt32();
             headerLoaded = true;
         }
 
@@ -143,34 +130,11 @@ namespace ReplayAPI
             if (fullLoaded)
                 return;
 
-            //Life
-            string lifeData = replayReader.ReadNullableString();
-            if (!string.IsNullOrEmpty(lifeData))
-            {
-                foreach (string lifeBlock in lifeData.Split(','))
-                {
-                    string[] split = lifeBlock.Split('|');
-                    if (split.Length < 2)
-                        continue;
-
-                    LifeFrames.Add(new LifeFrame()
-                    {
-                        Time = int.Parse(split[0], culture),
-                        Percentage = float.Parse(split[1], culture)
-                    });
-                }
-            }
-
-            Int64 ticks = replayReader.ReadInt64();
-            PlayTime = new DateTime(ticks, DateTimeKind.Utc);
-
-            ReplayLength = replayReader.ReadInt32();
-
             //Data
             if (ReplayLength > 0)
             {
                 int lastTime = 0;
-                using (MemoryStream codedStream = LZMACoder.Decompress(replayReader.BaseStream as FileStream))
+                using (MemoryStream codedStream = LZMACoder.Decompress(replayReader))
                 using (StreamReader sr = new StreamReader(codedStream))
                 {
                     foreach (string frame in sr.ReadToEnd().Split(','))
