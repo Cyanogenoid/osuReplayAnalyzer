@@ -309,9 +309,34 @@ namespace osuDodgyMomentsFinder
             associateHits();
         }
 
+		private readonly double multiplier;
 
 
-        private readonly double multiplier;
+		public string hitPositionInfo()
+		{
+			StringBuilder sb = new StringBuilder();
+
+			int hitsIndex = 0;
+			foreach (CircleObject note in beatmap.HitObjects)
+			{
+				if ((note.Type.HasFlag(HitObjectType.Spinner)))
+					continue;
+				if (hitsIndex >= hits.Count)
+					break;
+
+				if (note == hits[hitsIndex].note)
+				{
+					ReplayFrame frame = hits[hitsIndex].frame;
+					sb.Append("," + frame.X + "," + frame.Y);
+					++hitsIndex;
+				}
+				else
+				{
+					sb.Append(",,");
+				}
+			}
+			return sb.ToString();
+		}
 
 
     }

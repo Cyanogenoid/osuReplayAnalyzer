@@ -730,5 +730,20 @@ namespace BMAPI.v1
 		{
 			return this.Artist + " " + this.Title + " [" + this.Version + "]";
 		}
+
+		public string HitObjectsToString()
+		{
+			System.Text.StringBuilder sb = new System.Text.StringBuilder();
+			foreach (CircleObject hitobject in HitObjects)
+			{
+				sb.Append(hitobject.StartTime);
+				sb.Append(",");
+				sb.Append(hitobject.Location.X);
+				sb.Append(",");
+				sb.Append(hitobject.Location.Y);
+				sb.Append(",");
+			}
+			return sb.ToString();
+		}
 	}
 }

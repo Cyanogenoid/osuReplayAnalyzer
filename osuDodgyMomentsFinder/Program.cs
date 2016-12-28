@@ -74,17 +74,21 @@ namespace osuDodgyMomentsFinder
             return result;
         }
 
-
         public static StringBuilder ReplayAnalyzing(Beatmap beatmap, Replay replay, bool onlyMainInfo = false)
         {
             StringBuilder sb = new StringBuilder();
+			int hasHR = Convert.ToInt32(replay.Mods.HasFlag (Mods.HardRock)) - Convert.ToInt32(replay.Mods.HasFlag(Mods.Easy));
+			int hasDT = Convert.ToInt32(replay.Mods.HasFlag(Mods.DoubleTime)) - Convert.ToInt32(replay.Mods.HasFlag(Mods.HalfTime));
 
-            sb.AppendLine("BEATMAP: " + beatmap.ToString());
-            sb.AppendLine("REPLAY: " + replay.ToString());
-            sb.AppendLine();
+			sb.Append(hasHR);
+			sb.Append(",");
+			sb.Append(hasDT);
 
             ReplayAnalyzer analyzer = new ReplayAnalyzer(beatmap, replay);
-            sb.AppendLine();
+			sb.AppendLine(analyzer.hitPositionInfo());
+
+			// TODO test out how stacking works when applying HR, if that doesn't just flip the way notes
+			// are effectively stacked, probably need to generate different beatmaps when HR is active
 
             return sb;
         }
@@ -96,6 +100,7 @@ namespace osuDodgyMomentsFinder
 
             string res = "";
             StringBuilder sb = new StringBuilder();
+			sb.Append(pairs[0].Key.HitObjectsToString());
             foreach(var pair in pairs)
             {
                 string result = ReplayAnalyzing(pair.Key, pair.Value).ToString();
