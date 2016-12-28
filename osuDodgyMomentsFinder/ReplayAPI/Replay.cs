@@ -60,7 +60,6 @@ namespace ReplayAPI
             }
             if (fullLoad && !fullLoaded)
                 throw new Exception("Replay is not full but requsted to be read full.");
-			calculateCursorSpeed();
         }
 
         private Keys parseKeys(string v)
@@ -78,47 +77,6 @@ namespace ReplayAPI
             get; private set;
         }
 
-        private void calculateCursorSpeed()
-        {
-            double distance = 0;
-
-            times = ReplayFrames.Where(x => x.TimeDiff > 0).ToList();
-
-            if (!ReferenceEquals(times, null) && times.Count > 0)
-            {
-
-                times[0].travelledDistance = distance;
-                times[0].travelledDistanceDiff = 0;
-                for (int i = 0; i < times.Count - 1; ++i)
-                {
-                    ReplayFrame from = times[i], to = times[i + 1];
-                    double newDist = Utils.dist(from.X, from.Y, to.X, to.Y);
-                    distance += newDist;
-                    to.travelledDistance = distance;
-                    to.travelledDistanceDiff = newDist;
-                }
-
-                times[0].speed = 0;
-                for (int i = 0; i < times.Count - 1; ++i)
-                {
-                    ReplayFrame to = times[i + 1], current = times[i];
-
-                    double V = (to.travelledDistance - current.travelledDistance) / (to.TimeDiff);
-                    to.speed = V;
-                }
-                times.Last().speed = 0;
-
-                times[0].acceleration = 0;
-                for (int i = 0; i < times.Count - 1; ++i)
-                {
-                    ReplayFrame to = times[i + 1], current = times[i];
-
-                    double A = (to.speed - current.speed) / (to.TimeDiff);
-                    to.acceleration = A;
-                }
-                times.Last().acceleration = 0;
-            }
-        }
 
         /// <summary>
         /// Loads Metadata if not already loaded and loads Lifedata, Timestamp, Playtime and Clicks.

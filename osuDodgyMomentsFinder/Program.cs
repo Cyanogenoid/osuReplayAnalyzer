@@ -84,26 +84,7 @@ namespace osuDodgyMomentsFinder
             sb.AppendLine();
 
             ReplayAnalyzer analyzer = new ReplayAnalyzer(beatmap, replay);
-            sb.AppendLine(analyzer.MainInfo().ToString());
             sb.AppendLine();
-
-            if (!onlyMainInfo)
-            {
-                sb.AppendLine(analyzer.CursorInfo().ToString());
-                sb.AppendLine();
-                sb.AppendLine(analyzer.PixelPerfectInfo().ToString());
-                sb.AppendLine();
-                sb.AppendLine(analyzer.OveraimsInfo().ToString());
-                sb.AppendLine();
-                sb.AppendLine(analyzer.TeleportsInfo().ToString());
-                sb.AppendLine();
-                sb.AppendLine(analyzer.SingletapsInfo().ToString());
-                sb.AppendLine();
-                sb.AppendLine(analyzer.ExtraHitsInfo().ToString());
-                sb.AppendLine();
-                sb.AppendLine(analyzer.EffortlessMissesInfo().ToString());
-            }
-            sb.AppendLine("=================================================");
 
             return sb;
         }
