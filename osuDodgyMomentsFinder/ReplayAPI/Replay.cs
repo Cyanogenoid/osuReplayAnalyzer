@@ -44,7 +44,7 @@ namespace ReplayAPI
         private bool headerLoaded;
         public bool fullLoaded { get; private set; }
 
-        public Replay(string replayFile, bool fullLoad, bool calculateSpeed)
+		public Replay(string replayFile, bool fullLoad, string mods)
         {
             Filename = replayFile;
             byte[] content = System.Convert.FromBase64String(File.ReadAllText(replayFile));
@@ -52,6 +52,7 @@ namespace ReplayAPI
             using (replayReader = new MemoryStream(content))
             {
                 loadHeader();
+				Mods = (Mods)int.Parse(mods);
                 if (fullLoad)
                 {
                     Load();
@@ -59,8 +60,7 @@ namespace ReplayAPI
             }
             if (fullLoad && !fullLoaded)
                 throw new Exception("Replay is not full but requsted to be read full.");
-            if (calculateSpeed)
-                calculateCursorSpeed();
+			calculateCursorSpeed();
         }
 
         private Keys parseKeys(string v)

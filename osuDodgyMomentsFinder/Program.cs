@@ -4,6 +4,7 @@ using BMAPI.v1;
 using ReplayAPI;
 using System.Collections.Generic;
 using System.Text;
+using System.Web.Script.Serialization;
 
 namespace osuDodgyMomentsFinder
 {
@@ -50,15 +51,23 @@ namespace osuDodgyMomentsFinder
                     mapPath = basepath + file.Name;
                 }
             }
-            var replays = replaysFiles.ConvertAll((path) => new Replay(path, true, true));
+			Beatmap beatmap = new Beatmap(mapPath);
 
-            Beatmap beatmap = new Beatmap(mapPath);
+			JavaScriptSerializer serializer = new JavaScriptSerializer();
+			string jsonInfo= File.ReadAllText("../beatmap-scores.json");
+			var scores = serializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(jsonInfo);
+			var beatmapScores = scores[beatmap.BeatmapID.ToString()];
+
+			var replays = replaysFiles.ConvertAll((path) => new Replay(path, true, beatmapScores[Path.GetFileNameWithoutExtension(path)]));
+
+
 
             var result = new List<KeyValuePair<Beatmap, Replay>>();
             var dict = new Dictionary<string, Beatmap>();
 
             foreach(var replay in replays)
             {
+				Console.WriteLine (replay.Filename);
                 result.Add(new KeyValuePair<Beatmap, Replay>(beatmap, replay));
             }
 
@@ -152,7 +161,7 @@ namespace osuDodgyMomentsFinder
             }
             if(args[0] == "-i")
             {
-                Console.WriteLine(ReplayAnalyzing(new Replay(args[1], true, true)));
+                Console.WriteLine(ReplayAnalyzing(new Replay(args[1], true, "")));
             }
 
         }
