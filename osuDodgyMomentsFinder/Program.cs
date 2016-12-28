@@ -65,24 +65,6 @@ namespace osuDodgyMomentsFinder
             return result;
         }
 
-        public static StringBuilder ReplayDataCollecting(Beatmap beatmap, Replay replay)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("BEATMAP: " + beatmap.ToString());
-            sb.AppendLine("REPLAY: " + replay.ToString());
-
-            ReplayAnalyzer analyzer = new ReplayAnalyzer(beatmap, replay);
-            sb.AppendLine("Pixel perfect factors," + analyzer.PixelPerfectRawData().ToString());
-            sb.AppendLine("Time frame differences," + analyzer.TimeFramesRawData().ToString());
-            sb.AppendLine("Travelled distance differences," + analyzer.TravelledDistanceDiffRawData().ToString());
-            sb.AppendLine("Speed," + analyzer.SpeedRawData().ToString());
-            sb.AppendLine("Acceleration," + analyzer.AccelerationRawData().ToString());
-            sb.AppendLine("Hit errors," + analyzer.HitErrorRawData().ToString());
-            sb.AppendLine("Press key time lengths," + analyzer.PressKeyIntevalsRawData().ToString());
-
-            return sb;
-        }
 
         public static StringBuilder ReplayAnalyzing(Beatmap beatmap, Replay replay, bool onlyMainInfo = false)
         {
@@ -117,51 +99,6 @@ namespace osuDodgyMomentsFinder
             return sb;
         }
 
-
-        public static void ReplayComparison(string[] args)
-        {
-            DirectoryInfo directory = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-            FileInfo[] files = directory.GetFiles();
-
-            Console.Clear();
-            var replaysFiles = new List<string>();
-            foreach(FileInfo file in files)
-            {
-                if(file.Extension == ".osr")
-                {
-                    replaysFiles.Add(file.Name);
-                }
-            }
-
-            CompareReplays(replaysFiles, Double.MaxValue);
-
-            Console.ReadKey();
-        }
-
-        public static void CompareReplays(List<string> replaysFiles, double threshold)
-        {
-            var replays = replaysFiles.ConvertAll((path) => new Replay(path, true, true));
-
-            for(int i = 0; i < replays.Count; ++i)
-            {
-                for(int j = i + 1; j < replays.Count; ++j)
-                {
-                    ReplayComparator comparator = new ReplayComparator(replays[i], replays[j]);
-                    double diff = comparator.compareReplays();
-                    if(diff <= threshold)
-                        Console.WriteLine(replaysFiles[i] + " vs. " + replaysFiles[j] + " = " + diff);
-                }
-            }
-        }
-
-        public static void CompareReplays(string[] args)
-        {
-            var list = new List<string>();
-            for(int i = 0; i < args.Length; ++i)
-                list.Add(args[i]);
-            CompareReplays(list, Double.MaxValue);
-            Console.ReadKey();
-        }
 
         public static void ReplayAnalyzingAll(string path)
         {
@@ -217,31 +154,7 @@ namespace osuDodgyMomentsFinder
             {
                 Console.WriteLine(ReplayAnalyzing(new Replay(args[1], true, true)));
             }
-            if(args[0] == "-c")
-                ReplayComparison(args.SubArray(1));
-            if(args[0] == "-cr")
-                CompareReplays(args.SubArray(1));
-            if(args[0] == "-s")
-            {
-                if(args.Length == 1)
-                    args = UIUtils.getArgsFromUser();
-                CursorSpeed(new Beatmap(args[1]), new Replay(args[2], true, true));
-            }
 
-        }
-
-        public static void CursorSpeed(Beatmap beatmap, Replay replay)
-        {
-            string res = "";
-
-            Console.WriteLine("BEATMAP: " + beatmap.ToString() + "\n");
-            Console.WriteLine("REPLAY: " + replay.ToString() + "\n");
-
-            ReplayAnalyzer analyzer = new ReplayAnalyzer(beatmap, replay);
-            res += analyzer.outputAcceleration() + "\r\n";
-            res += analyzer.outputTime() + "\r\n";
-
-            File.WriteAllText(replay.ToString() + ".accelerations", res);
         }
     }
 }
