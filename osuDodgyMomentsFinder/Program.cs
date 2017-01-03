@@ -100,7 +100,7 @@ namespace osuDodgyMomentsFinder
 
             string res = "";
             StringBuilder sb = new StringBuilder();
-			sb.Append(pairs[0].Key.HitObjectsToString());
+			sb.AppendLine(pairs[0].Key.HitObjectsToString());
             foreach(var pair in pairs)
             {
                 string result = ReplayAnalyzing(pair.Key, pair.Value).ToString();
