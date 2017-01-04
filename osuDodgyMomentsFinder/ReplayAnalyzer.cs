@@ -321,10 +321,7 @@ namespace osuDodgyMomentsFinder
 			{
 				if ((note.Type.HasFlag(HitObjectType.Spinner)))
 					continue;
-				if (hitsIndex >= hits.Count)
-					break;
-
-				if (note == hits[hitsIndex].note)
+                if (hitsIndex < hits.Count && note == hits[hitsIndex].note)
 				{
 					ReplayFrame frame = hits[hitsIndex].frame;
 					sb.Append("," + frame.X + "," + frame.Y);
