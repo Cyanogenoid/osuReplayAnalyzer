@@ -25,8 +25,9 @@ namespace osuDodgyMomentsFinder
             return dict;
         }
 
-
-        public static List<KeyValuePair<Beatmap, Replay>> AssociateMapsReplays(string basepath)
+        static JavaScriptSerializer serializer = new JavaScriptSerializer();
+        static Dictionary<string, Dictionary<string, string>> scores = serializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(File.ReadAllText("../beatmap-scores.json"));
+        public static List<KeyValuePair<Beatmap, Replay>> AssociateMapsReplays(DirectoryInfo directory)
         {
             if (!basepath.EndsWith("/")) {
                 basepath = basepath + "/";
@@ -51,11 +52,7 @@ namespace osuDodgyMomentsFinder
                     mapPath = basepath + file.Name;
                 }
             }
-			Beatmap beatmap = new Beatmap(mapPath);
-
-			JavaScriptSerializer serializer = new JavaScriptSerializer();
-			string jsonInfo= File.ReadAllText("../beatmap-scores.json");
-			var scores = serializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(jsonInfo);
+            Beatmap beatmap = new Beatmap (mapPath);
 			var beatmapScores = scores[beatmap.BeatmapID.ToString()];
 
 			var replays = replaysFiles.ConvertAll((path) => new Replay(path, true, beatmapScores[Path.GetFileNameWithoutExtension(path)]));
