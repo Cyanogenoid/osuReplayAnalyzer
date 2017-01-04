@@ -29,42 +29,34 @@ namespace osuDodgyMomentsFinder
         static Dictionary<string, Dictionary<string, string>> scores = serializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(File.ReadAllText("../beatmap-scores.json"));
         public static List<KeyValuePair<Beatmap, Replay>> AssociateMapsReplays(DirectoryInfo directory)
         {
-            if (!basepath.EndsWith("/")) {
-                basepath = basepath + "/";
-            }
-            DirectoryInfo directory = new DirectoryInfo(basepath);
             FileInfo[] files = directory.GetFiles();
 
             var replaysFiles = new List<string>();
             string mapPath = null;
             foreach(FileInfo file in files)
             {
+                string fullPath = Path.Combine(directory.FullName, file.Name);
                 if(file.Extension == ".b64")
                 {
-                    replaysFiles.Add(basepath + file.Name);
+                    replaysFiles.Add(fullPath);
                 }
                 if(file.Extension == ".osu")
                 {
                     if (mapPath != null)
                     {
-                        Console.WriteLine("WARNING: more than one .osu file found in " + basepath);
+                        Console.WriteLine("WARNING: more than one .osu file found in " + directory.FullName);
                     }
-                    mapPath = basepath + file.Name;
+                    mapPath = fullPath;
                 }
             }
             Beatmap beatmap = new Beatmap (mapPath);
 			var beatmapScores = scores[beatmap.BeatmapID.ToString()];
-
 			var replays = replaysFiles.ConvertAll((path) => new Replay(path, true, beatmapScores[Path.GetFileNameWithoutExtension(path)]));
 
 
-
             var result = new List<KeyValuePair<Beatmap, Replay>>();
-            var dict = new Dictionary<string, Beatmap>();
-
             foreach(var replay in replays)
             {
-				Console.WriteLine (replay.Filename);
                 result.Add(new KeyValuePair<Beatmap, Replay>(beatmap, replay));
             }
 
@@ -91,9 +83,10 @@ namespace osuDodgyMomentsFinder
         }
 
 
-        public static void ReplayAnalyzingAll(string path)
+        public static void ReplayAnalyzingAll(DirectoryInfo info)
         {
-            var pairs = AssociateMapsReplays(path);
+            Console.WriteLine ("Analyzing " + info.FullName);
+            var pairs = AssociateMapsReplays(info);
 
             string res = "";
             StringBuilder sb = new StringBuilder();
@@ -103,7 +96,7 @@ namespace osuDodgyMomentsFinder
                 string result = ReplayAnalyzing(pair.Key, pair.Value).ToString();
                 sb.Append(result);
             }
-            File.WriteAllText("log.txt", sb.ToString());
+            File.WriteAllText("../data/" + info.Name + ".csv", sb.ToString());
         }
 
         public static string ReplayAnalyzing(Replay replay)
@@ -140,7 +133,10 @@ namespace osuDodgyMomentsFinder
             }
             if(args[0] == "-ia")
             {
-                ReplayAnalyzingAll(args[1]);
+                foreach (DirectoryInfo info in new DirectoryInfo(args[1]).EnumerateDirectories())
+				{
+                    ReplayAnalyzingAll(info);
+				}
             }
             if(args[0] == "-i")
             {
