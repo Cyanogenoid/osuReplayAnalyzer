@@ -734,7 +734,9 @@ namespace BMAPI.v1
 		public string HitObjectsToString()
 		{
 			System.Text.StringBuilder sb = new System.Text.StringBuilder();
-			foreach (CircleObject hitobject in HitObjects)
+            sb.Append(CircleSize);
+            sb.Append(",");
+            foreach (CircleObject hitobject in HitObjects)
 			{
 				if ((hitobject.Type.HasFlag(HitObjectType.Spinner)))
 					continue;
