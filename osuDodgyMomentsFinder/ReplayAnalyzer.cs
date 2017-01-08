@@ -144,6 +144,10 @@ namespace osuDodgyMomentsFinder
                     {
                         if (note.ContainsPoint(new BMAPI.Point2(frame.X, frame.Y)))
                         {
+                            if (noteAttemptedHitFlag)
+                            {
+                                attemptedHits.RemoveAt (attemptedHits.Count - 1);
+                            }
                             noteAttemptedHitFlag = true;
                             ++combo;
                             frame.combo = combo;
@@ -162,6 +166,10 @@ namespace osuDodgyMomentsFinder
                             }
                             else
                             {
+                                if (noteAttemptedHitFlag)
+                                {
+                                    attemptedHits.RemoveAt (attemptedHits.Count - 1);
+                                }
                                 noteAttemptedHitFlag = true;
                                 attemptedHits.Add(new HitFrame(note, frame, pressedKey));
                             }
@@ -169,6 +177,10 @@ namespace osuDodgyMomentsFinder
                     }
                     if (pressedKey > 0 && Math.Abs(frame.Time - note.StartTime) <= 3 * hitTimeWindow && note.ContainsPoint(new BMAPI.Point2(frame.X, frame.Y)))
                     {
+                        if (noteAttemptedHitFlag)
+                        {
+                            attemptedHits.RemoveAt (attemptedHits.Count - 1);
+                        }
                         noteAttemptedHitFlag = true;
                         attemptedHits.Add(new HitFrame(note, frame, pressedKey));
                     }
@@ -317,16 +329,23 @@ namespace osuDodgyMomentsFinder
 			StringBuilder sb = new StringBuilder();
 
 			int hitsIndex = 0;
+            int attemptedIndex = 0;
 			foreach (CircleObject note in beatmap.HitObjects)
 			{
-				if ((note.Type.HasFlag(HitObjectType.Spinner)))
-					continue;
+				if (note.Type.HasFlag(HitObjectType.Spinner))
+                    continue;
                 if (hitsIndex < hits.Count && note == hits[hitsIndex].note)
-				{
-					ReplayFrame frame = hits[hitsIndex].frame;
-					sb.Append("," + frame.X + "," + frame.Y);
-					++hitsIndex;
-				}
+                {
+                    ReplayFrame frame = hits[hitsIndex].frame;
+                    sb.Append("," + frame.X + "," + frame.Y);
+                    ++hitsIndex;
+                }
+                else if (attemptedIndex < attemptedHits.Count && note == attemptedHits[attemptedIndex].note)
+                {
+                    ReplayFrame frame = attemptedHits[attemptedIndex].frame;
+                    sb.Append("," + frame.X + "," + frame.Y);
+                    ++attemptedIndex;
+                }
 				else
 				{
 					sb.Append(",,");
